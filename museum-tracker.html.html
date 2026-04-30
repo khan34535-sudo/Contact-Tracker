@@ -1,0 +1,1107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Museum Contact Tracker</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-size: 18px;
+    }
+
+    html {
+      height: 100%;
+      width: 100%;
+    }
+
+    .app-wrapper {
+      width: 100%;
+      min-height: 100%;
+      overflow-y: auto;
+      padding: 30px;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    /* Top-Left Date Stamp - WHITE FONT */
+    .top-date {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 12px 25px;
+      border-radius: 50px;
+      border: 2px solid #667eea;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 100;
+      backdrop-filter: blur(5px);
+    }
+
+    .top-date-label {
+      font-size: 0.7em;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #FFD700;
+      margin-bottom: 3px;
+    }
+
+    .top-date-value {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #FFFFFF;
+      font-family: monospace;
+    }
+
+    /* Bottom-Right Time Stamp - WHITE FONT */
+    .bottom-time {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 12px 25px;
+      border-radius: 50px;
+      border: 2px solid #667eea;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 100;
+      backdrop-filter: blur(5px);
+      text-align: center;
+    }
+
+    .bottom-time-label {
+      font-size: 0.7em;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #FFD700;
+      margin-bottom: 3px;
+    }
+
+    .bottom-time-value {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #FFFFFF;
+      font-family: monospace;
+    }
+
+    /* Toolbar */
+    .toolbar {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border-radius: 20px;
+      padding: 15px 25px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      border: 2px solid #667eea;
+    }
+
+    .toolbar-buttons {
+      display: flex;
+      gap: 15px;
+    }
+
+    .toolbar-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      padding: 12px 25px;
+      border-radius: 50px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .toolbar-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+    }
+
+    .print-btn {
+      background: linear-gradient(135deg, #6c757d, #495057);
+    }
+
+    .save-btn {
+      background: linear-gradient(135deg, #28a745, #20c997);
+    }
+
+    .header {
+      text-align: center;
+      color: #ffffff;
+      margin-bottom: 30px;
+      margin-top: 10px;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin: 0 0 15px 0;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+    }
+
+    .header p {
+      font-size: 1.2em;
+      opacity: 0.9;
+      margin: 0;
+      color: #ffffff;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 25px 35px;
+      border-radius: 20px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+      text-align: center;
+      border: 3px solid #667eea;
+      min-width: 180px;
+    }
+
+    .stat-number {
+      font-size: 3.5em;
+      font-weight: bold;
+      color: #667eea;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .stat-label {
+      font-size: 1.2em;
+      color: #a8b2d1;
+      margin: 10px 0 0 0;
+      font-weight: 600;
+    }
+
+    .add-form {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 35px;
+      border-radius: 20px;
+      margin-bottom: 40px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+      border: 3px solid #667eea;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #FFD700;
+      font-size: 1.1em;
+    }
+
+    h2 {
+      color: #ffffff;
+      font-size: 2.2em;
+      margin-top: 0;
+      margin-bottom: 25px;
+    }
+
+    /* INPUT FIELDS - WHITE TEXT FOR VISIBILITY */
+    input, textarea {
+      padding: 14px;
+      border: 3px solid #667eea;
+      border-radius: 10px;
+      font-size: 1.1em;
+      transition: border-color 0.3s;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f1419;
+      color: #FFFFFF;
+      font-weight: 500;
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: #888888;
+      opacity: 0.7;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #FFD700;
+      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3);
+      background: #1a1a2e;
+      color: #FFFFFF;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+      font-size: 1.1em;
+    }
+
+    .button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 16px 40px;
+      border-radius: 12px;
+      font-size: 1.2em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+
+    .button:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+    }
+
+    .button:active {
+      transform: translateY(-1px);
+    }
+
+    .button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .museums-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 30px;
+    }
+
+    .museum-card {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+      transition: transform 0.3s;
+      border: 3px solid #667eea;
+    }
+
+    .museum-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(102,126,234,0.4);
+    }
+
+    .museum-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #2c3e50;
+    }
+
+    .museum-name {
+      font-size: 1.6em;
+      font-weight: bold;
+      color: #ffffff;
+      margin: 0;
+      flex: 1;
+      line-height: 1.3;
+    }
+
+    .museum-actions {
+      display: flex;
+      gap: 15px;
+    }
+
+    .icon-button {
+      background: none;
+      border: none;
+      font-size: 1.6em;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .icon-button:hover {
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .museum-info {
+      margin-bottom: 15px;
+    }
+
+    .info-row {
+      display: flex;
+      margin-bottom: 12px;
+      font-size: 1.1em;
+      flex-wrap: wrap;
+    }
+
+    .info-label {
+      font-weight: 700;
+      color: #FFD700;
+      min-width: 150px;
+      font-size: 1.1em;
+    }
+
+    .info-value {
+      color: #FFFFFF;
+      flex: 1;
+      word-break: break-word;
+      font-size: 1.1em;
+    }
+
+    .email-status {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px;
+      background: rgba(15, 20, 25, 0.6);
+      border-radius: 12px;
+      margin: 15px 0;
+      border: 2px solid #2c3e50;
+      flex-wrap: wrap;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      color: #FFD700;
+      font-size: 1.1em;
+    }
+
+    input[type="checkbox"] {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      accent-color: #667eea;
+    }
+
+    .date-badge {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.9em;
+    }
+
+    .timestamp-badge {
+      background: #0f1419;
+      color: #FFFFFF;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      border: 1px solid #667eea;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .edit-mode {
+      border: 4px solid #FFD700;
+    }
+
+    .edit-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .button-small {
+      padding: 12px 24px;
+      font-size: 1.1em;
+    }
+
+    .button-secondary {
+      background: #6c757d;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 30px;
+      color: white;
+      font-size: 1.8em;
+      font-weight: 600;
+    }
+
+    .limit-warning {
+      background: #fff3cd;
+      border: 3px solid #ffc107;
+      color: #856404;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.3em;
+    }
+
+    /* Print Styles */
+    @media print {
+      .top-date, .bottom-time, .toolbar, .add-form, .stats, .icon-button, .button {
+        display: none !important;
+      }
+      .museum-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        border: 2px solid #667eea;
+        margin-bottom: 20px;
+      }
+      body {
+        background: white;
+        padding: 20px;
+      }
+      .app-wrapper {
+        padding: 0;
+      }
+      .museum-name {
+        color: #1a1a2e;
+      }
+      .info-value {
+        color: #333;
+      }
+      .info-label {
+        color: #667eea;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        font-size: 16px;
+      }
+      
+      .app-wrapper {
+        padding: 20px;
+      }
+      
+      .museums-list {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 2.5em;
+      }
+      
+      h2 {
+        font-size: 1.8em;
+      }
+      
+      .stat-number {
+        font-size: 2.5em;
+      }
+      
+      .toolbar {
+        justify-content: center;
+      }
+
+      .top-date {
+        top: 10px;
+        left: 10px;
+        padding: 8px 15px;
+      }
+
+      .top-date-value {
+        font-size: 0.9em;
+      }
+
+      .bottom-time {
+        bottom: 10px;
+        right: 10px;
+        padding: 8px 15px;
+      }
+
+      .bottom-time-value {
+        font-size: 0.9em;
+      }
+
+      .header {
+        margin-top: 50px;
+      }
+
+      .info-label {
+        min-width: 130px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 2em;
+      }
+      
+      .stats {
+        gap: 15px;
+      }
+      
+      .stat-card {
+        padding: 15px 20px;
+        min-width: 120px;
+      }
+      
+      .stat-number {
+        font-size: 2em;
+      }
+
+      .top-date, .bottom-time {
+        padding: 6px 12px;
+      }
+
+      .top-date-value, .bottom-time-value {
+        font-size: 0.8em;
+      }
+
+      .info-label {
+        min-width: 110px;
+        font-size: 0.9em;
+      }
+
+      .info-value {
+        font-size: 0.9em;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+</head>
+<body>
+<!-- Top-Left Date Stamp - WHITE FONT -->
+<div class="top-date">
+  <div class="top-date-label">📅 TODAY'S DATE</div>
+  <div class="top-date-value" id="topDateValue">--</div>
+</div>
+
+<!-- Bottom-Right Time Stamp - WHITE FONT -->
+<div class="bottom-time">
+  <div class="bottom-time-label">🕐 CURRENT TIME</div>
+  <div class="bottom-time-value" id="bottomTimeValue">--:--:--</div>
+</div>
+
+<div class="app-wrapper">
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-buttons">
+      <button class="toolbar-btn save-btn" id="saveDataBtn">💾 Save Data</button>
+      <button class="toolbar-btn print-btn" id="printBtn">🖨️ Print Report</button>
+    </div>
+  </div>
+
+  <div class="header">
+    <h1 id="appTitle">🏛️ Museum Contact Tracker</h1>
+    <p>Keep track of all museums you've contacted about your product</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <p class="stat-number" id="totalCount">0</p>
+      <p class="stat-label">Total Museums</p>
+    </div>
+    <div class="stat-card">
+      <p class="stat-number" id="sentCount">0</p>
+      <p class="stat-label">Emails Sent</p>
+    </div>
+    <div class="stat-card">
+      <p class="stat-number" id="pendingCount">0</p>
+      <p class="stat-label">Pending</p>
+    </div>
+  </div>
+
+  <div id="limitWarning" class="limit-warning" style="display: none;">
+    ⚠️ Maximum limit of 999 museums reached. Please delete some entries to add more.
+  </div>
+
+  <div class="add-form">
+    <h2 style="margin-top: 0;">➕ Add New Museum</h2>
+    <form id="addMuseumForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="museumName">Museum Name *</label>
+          <input type="text" id="museumName" required placeholder="Enter museum name...">
+        </div>
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input type="email" id="email" required placeholder="curator@museum.org">
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" placeholder="(555) 555-5555">
+        </div>
+        <div class="form-group">
+          <label for="contactName">Contact Person</label>
+          <input type="text" id="contactName" placeholder="Jane Doe">
+        </div>
+        <div class="form-group">
+          <label for="specificSection">Specific Section/Department</label>
+          <input type="text" id="specificSection" placeholder="e.g., Education, Curatorial">
+        </div>
+        <div class="form-group">
+          <label for="targetedThemes">Targeted Themes</label>
+          <input type="text" id="targetedThemes" placeholder="e.g., Modern Art, History, Science">
+        </div>
+        <div class="form-group">
+          <label for="followUp">Follow-up Information</label>
+          <input type="text" id="followUp" placeholder="e.g., Call back in 2 weeks">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom: 25px;">
+        <label for="notes">Notes</label>
+        <textarea id="notes" placeholder="Additional information..."></textarea>
+      </div>
+      <button type="submit" class="button" id="addButton">➕ Add Museum</button>
+    </form>
+  </div>
+
+  <div id="museumsList" class="museums-list"></div>
+  <div id="emptyState" class="empty-state">
+    📭 No museums added yet. Add your first museum above!
+  </div>
+</div>
+
+<script>
+  const defaultConfig = {
+    app_title: "Museum Contact Tracker",
+    primary_color: "#667eea",
+    background_color: "#764ba2"
+  };
+
+  let museums = [];
+  let editingMuseum = null;
+
+  const dataHandler = {
+    onDataChanged(data) {
+      museums = data;
+      renderMuseums();
+      updateStats();
+    }
+  };
+
+  async function initApp() {
+    const result = await window.dataSdk.init(dataHandler);
+    if (!result.isOk) {
+      console.error("Failed to initialize data SDK");
+    }
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+  }
+
+  function updateDateTime() {
+    const now = new Date();
+    
+    // Top-Left Date - WHITE
+    const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('topDateValue').innerHTML = now.toLocaleDateString('en-US', dateOptions);
+    
+    // Bottom-Right Time - WHITE
+    const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    document.getElementById('bottomTimeValue').innerHTML = now.toLocaleTimeString('en-US', timeOptions);
+  }
+
+  function updateStats() {
+    const total = museums.length;
+    const sent = museums.filter(m => m.email_sent).length;
+    const pending = total - sent;
+
+    document.getElementById('totalCount').textContent = total;
+    document.getElementById('sentCount').textContent = sent;
+    document.getElementById('pendingCount').textContent = pending;
+
+    const limitWarning = document.getElementById('limitWarning');
+    if (total >= 999) {
+      limitWarning.style.display = 'block';
+    } else {
+      limitWarning.style.display = 'none';
+    }
+  }
+
+  function renderMuseums() {
+    const container = document.getElementById('museumsList');
+    const emptyState = document.getElementById('emptyState');
+
+    if (museums.length === 0) {
+      container.style.display = 'none';
+      emptyState.style.display = 'block';
+      return;
+    }
+
+    container.style.display = 'grid';
+    emptyState.style.display = 'none';
+
+    const sortedMuseums = [...museums].sort((a, b) => 
+      new Date(b.created_at) - new Date(a.created_at)
+    );
+
+    container.innerHTML = sortedMuseums.map((museum, index) => {
+      const isEditing = editingMuseum && editingMuseum.__backendId === museum.__backendId;
+      
+      if (isEditing) {
+        return `
+          <div class="museum-card edit-mode" data-id="${museum.__backendId}">
+            <h3 style="margin-top: 0; font-size: 1.8em; color: #FFD700;">✏️ Edit Museum</h3>
+            <div class="form-group" style="margin-bottom: 15px;">
+              <label>Museum Name</label>
+              <input type="text" class="edit-input" data-field="museum_name" value="${escapeHtml(museum.museum_name)}">
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+              <label>Email</label>
+              <input type="email" class="edit-input" data-field="email" value="${escapeHtml(museum.email)}">
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+              <label>Phone</label>
+              <input type="tel" class="edit-input" data-field="phone" value="${escapeHtml(museum.phone || '')}">
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+              <label>Contact Person</label>
+              <input type="text" class="edit-input" data-field="contact_name" value="${escapeHtml(museum.contact_name || '')}">
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+              <label>Section/Department</label>
+              <input type="text" class="edit-input" data-field="specific_section" value="${escapeHtml(museum.specific_section || '')}">
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+              <label>Targeted Themes</label>
+              <input type="text" class="edit-input" data-field="targeted_themes" value="${escapeHtml(museum.targeted_themes || '')}">
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+              <label>Follow-up</label>
+              <input type="text" class="edit-input" data-field="follow_up" value="${escapeHtml(museum.follow_up || '')}">
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+              <label>Notes</label>
+              <textarea class="edit-input" data-field="notes">${escapeHtml(museum.notes || '')}</textarea>
+            </div>
+            <div class="edit-actions">
+              <button class="button button-small" onclick="saveEdit('${museum.__backendId}')">💾 Save</button>
+              <button class="button button-small button-secondary" onclick="cancelEdit()">❌ Cancel</button>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="museum-card" data-id="${museum.__backendId}">
+          <div class="museum-header">
+            <h3 class="museum-name">🏛️ ${escapeHtml(museum.museum_name)}</h3>
+            <div class="museum-actions">
+              <button class="icon-button" onclick="startEdit('${museum.__backendId}')" title="Edit">✏️</button>
+              <button class="icon-button" onclick="deleteMuseum('${museum.__backendId}')" title="Delete">🗑️</button>
+            </div>
+          </div>
+          <div class="museum-info">
+            <div class="info-row">
+              <span class="info-label">📧 Email:</span>
+              <span class="info-value">${escapeHtml(museum.email)}</span>
+            </div>
+            ${museum.phone ? `
+              <div class="info-row">
+                <span class="info-label">📞 Phone:</span>
+                <span class="info-value">${escapeHtml(museum.phone)}</span>
+              </div>
+            ` : ''}
+            ${museum.contact_name ? `
+              <div class="info-row">
+                <span class="info-label">👤 Contact:</span>
+                <span class="info-value">${escapeHtml(museum.contact_name)}</span>
+              </div>
+            ` : ''}
+            ${museum.specific_section ? `
+              <div class="info-row">
+                <span class="info-label">📂 Section:</span>
+                <span class="info-value">${escapeHtml(museum.specific_section)}</span>
+              </div>
+            ` : ''}
+            ${museum.targeted_themes ? `
+              <div class="info-row">
+                <span class="info-label">🎨 Targeted Themes:</span>
+                <span class="info-value">${escapeHtml(museum.targeted_themes)}</span>
+              </div>
+            ` : ''}
+            ${museum.follow_up ? `
+              <div class="info-row">
+                <span class="info-label">⏰ Follow-up:</span>
+                <span class="info-value">${escapeHtml(museum.follow_up)}</span>
+              </div>
+            ` : ''}
+            ${museum.notes ? `
+              <div class="info-row">
+                <span class="info-label">📝 Notes:</span>
+                <span class="info-value">${escapeHtml(museum.notes)}</span>
+              </div>
+            ` : ''}
+            <div class="info-row">
+              <span class="info-label">🕒 Added:</span>
+              <span class="info-value"><span class="timestamp-badge">📅 ${museum.created_at ? formatDateTime(museum.created_at) : 'N/A'}</span></span>
+            </div>
+          </div>
+          <div class="email-status">
+            <label class="checkbox-label">
+              <input type="checkbox" ${museum.email_sent ? 'checked' : ''} 
+                onchange="toggleEmailSent('${museum.__backendId}', this.checked)">
+              ✉️ Email Sent
+            </label>
+            ${museum.email_sent && museum.date_sent ? `
+              <span class="date-badge">📧 Sent: ${formatDate(museum.date_sent)}</span>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  document.getElementById('addMuseumForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (museums.length >= 999) {
+      alert('Maximum limit of 999 museums reached!');
+      return;
+    }
+
+    const button = document.getElementById('addButton');
+    button.disabled = true;
+    button.textContent = 'Adding...';
+
+    const newMuseum = {
+      museum_name: document.getElementById('museumName').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      contact_name: document.getElementById('contactName').value.trim(),
+      specific_section: document.getElementById('specificSection').value.trim(),
+      targeted_themes: document.getElementById('targetedThemes').value.trim(),
+      email_sent: false,
+      date_sent: null,
+      notes: document.getElementById('notes').value.trim(),
+      follow_up: document.getElementById('followUp').value.trim(),
+      created_at: new Date().toISOString()
+    };
+
+    const result = await window.dataSdk.create(newMuseum);
+    
+    button.disabled = false;
+    button.textContent = '➕ Add Museum';
+
+    if (result.isOk) {
+      document.getElementById('addMuseumForm').reset();
+    } else {
+      alert('Failed to add museum. Please try again.');
+    }
+  });
+
+  async function toggleEmailSent(id, checked) {
+    const museum = museums.find(m => m.__backendId === id);
+    if (!museum) return;
+
+    const updatedMuseum = {
+      ...museum,
+      email_sent: checked,
+      date_sent: checked ? new Date().toISOString() : null
+    };
+
+    await window.dataSdk.update(updatedMuseum);
+  }
+
+  function startEdit(id) {
+    editingMuseum = museums.find(m => m.__backendId === id);
+    renderMuseums();
+  }
+
+  function cancelEdit() {
+    editingMuseum = null;
+    renderMuseums();
+  }
+
+  async function saveEdit(id) {
+    const card = document.querySelector(`.museum-card.edit-mode`);
+    const inputs = card.querySelectorAll('.edit-input');
+    
+    const museum = museums.find(m => m.__backendId === id);
+    if (!museum) return;
+
+    const updatedMuseum = { ...museum };
+    
+    inputs.forEach(input => {
+      const field = input.dataset.field;
+      updatedMuseum[field] = input.value.trim();
+    });
+
+    const result = await window.dataSdk.update(updatedMuseum);
+    
+    if (result.isOk) {
+      editingMuseum = null;
+    } else {
+      alert('Failed to update museum. Please try again.');
+    }
+  }
+
+  async function deleteMuseum(id) {
+    const museum = museums.find(m => m.__backendId === id);
+    if (!museum) return;
+
+    const confirmed = confirm(`Are you sure you want to delete "${museum.museum_name}"?`);
+    if (!confirmed) return;
+
+    const result = await window.dataSdk.delete(museum);
+    
+    if (!result.isOk) {
+      alert('Failed to delete museum. Please try again.');
+    }
+  }
+
+  function formatDate(isoString) {
+    const date = new Date(isoString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function formatDateTime(isoString) {
+    const date = new Date(isoString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function saveDataToFile() {
+    const data = {
+      museums: museums,
+      exportDate: new Date().toISOString(),
+      totalCount: museums.length
+    };
+    
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `museum_tracker_backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alert(`✅ Data saved! ${museums.length} museums exported.`);
+  }
+
+  function printReport() {
+    const printWindow = window.open('', '_blank');
+    const currentDate = new Date().toLocaleString();
+    
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Museum Contact Tracker Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 30px; }
+            h1 { color: #667eea; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+            th { background: #667eea; color: white; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .stats { display: flex; gap: 20px; margin: 20px 0; }
+            .stat-box { background: #f5f5f5; padding: 15px; border-radius: 10px; text-align: center; flex: 1; }
+            .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+            @media print {
+              body { margin: 0; padding: 20px; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>🏛️ Museum Contact Tracker Report</h1>
+            <p>Generated: ${currentDate}</p>
+          </div>
+          
+          <div class="stats">
+            <div class="stat-box"><strong>Total Museums:</strong> ${museums.length}</div>
+            <div class="stat-box"><strong>Emails Sent:</strong> ${museums.filter(m => m.email_sent).length}</div>
+            <div class="stat-box"><strong>Pending:</strong> ${museums.filter(m => !m.email_sent).length}</div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr><th>Museum Name</th><th>Email</th><th>Phone</th><th>Contact</th><th>Themes</th><th>Email Sent</th><th>Date Added</th></tr>
+            </thead>
+            <tbody>
+              ${museums.map(m => `
+                <tr>
+                  <td>${escapeHtml(m.museum_name)}</td
+                  <td>${escapeHtml(m.email)}</td
+                  <td>${escapeHtml(m.phone || '-')}</td
+                  <td>${escapeHtml(m.contact_name || '-')}</td
+                  <td>${escapeHtml(m.targeted_themes || '-')}</td
+                  <td>${m.email_sent ? '✓ Yes' : '✗ No'}</td
+                  <td>${m.created_at ? formatDate(m.created_at) : '-'}</td
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div class="footer">
+            <p>Museum Contact Tracker - Generated on ${currentDate}</p>
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.print();
+    printWindow.close();
+  }
+
+  async function onConfigChange(config) {
+    document.getElementById('appTitle').textContent = config.app_title || defaultConfig.app_title;
+  }
+
+  function mapToCapabilities(config) {
+    return {
+      recolorables: [],
+      borderables: [],
+      fontEditable: undefined,
+      fontSizeable: undefined
+    };
+  }
+
+  function mapToEditPanelValues(config) {
+    return new Map([
+      ['app_title', config.app_title || defaultConfig.app_title]
+    ]);
+  }
+
+  if (window.elementSdk) {
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange,
+      mapToCapabilities,
+      mapToEditPanelValues
+    });
+  }
+
+  document.getElementById('saveDataBtn').addEventListener('click', saveDataToFile);
+  document.getElementById('printBtn').addEventListener('click', printReport);
+
+  initApp();
+</script>
+</body>
+</html>
